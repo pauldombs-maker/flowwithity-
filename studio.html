@@ -16,7 +16,13 @@ function resize(){w=canvas.clientWidth;h=canvas.clientHeight;dpr=Math.min(device
 function cover(){const s=Math.max(w/SIZE,h/SIZE),ox=(w-SIZE*s)/2,oy=(h-SIZE*s)/2;return{s,ox,oy}}
 function imageAt(s,ox,oy){ctx.drawImage(img,ox,oy,SIZE*s,SIZE*s)}
 function panelPath(side,t){const tip=h*(.28+.69*t);const maxGap=w*.49*Math.pow(t,.9);ctx.beginPath();if(side==='left'){ctx.moveTo(0,0);ctx.lineTo(w/2-maxGap,0);for(let i=0;i<=60;i++){let y=tip*i/60;let u=1-y/tip;let bend=maxGap*Math.pow(u,.76);let ripple=Math.sin(i*.42+t*8)*Math.min(3,w*.007)*t*u;ctx.lineTo(w/2-bend+ripple,y)}ctx.lineTo(w/2,h);ctx.lineTo(0,h)}else{ctx.moveTo(w,0);ctx.lineTo(w/2+maxGap,0);for(let i=0;i<=60;i++){let y=tip*i/60;let u=1-y/tip;let bend=maxGap*Math.pow(u,.76);let ripple=Math.sin(i*.42+t*8+1)*Math.min(3,w*.007)*t*u;ctx.lineTo(w/2+bend+ripple,y)}ctx.lineTo(w/2,h);ctx.lineTo(w,h)}ctx.closePath()}
-function fabric(side,t,geo){ctx.save();panelPath(side,t);ctx.clip();const shift=(side==='left'?-1:1)*w*.035*t;imageAt(geo.s,geo.ox+shift,geo.oy);const grad=ctx.createLinearGradient(w/2+(side==='left'?-w*.35:w*.35),0,w/2,0);grad.addColorStop(0,'#0000');grad.addColorStop(1,'#0009');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);ctx.restore()}
+function fabric(side,t,geo){ctx.save();panelPath(side,t);ctx.clip();const shift=(side==='left'?-1:1)*w*.035*t;// Use zipper-free cloth from the outer halves of the actual hoodie photo.
+// Stretch the neighbouring knit to the centre seam; the original metal is
+// drawn only once, in the independently animated hardware layer.
+const sourceStart=side==='left'?0:760,sourceWidth=side==='left'?490:494;
+ctx.drawImage(img,sourceStart,0,sourceWidth,SIZE,
+  side==='left'?0:w/2,w*.5,h);
+const grad=ctx.createLinearGradient(w/2+(side==='left'?-w*.35:w*.35),0,w/2,0);grad.addColorStop(0,'#0000');grad.addColorStop(1,'#0009');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);ctx.restore()}
 function draw(){if(!ready||!w||!h)return;ctx.clearRect(0,0,w,h);const t=progress,geo=cover();if(t<.012){imageAt(geo.s,geo.ox,geo.oy);return}
 fabric('left',t,geo);fabric('right',t,geo);
 // The metal hardware is copied from the original product photograph, never redrawn.
